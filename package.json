@@ -40,5 +40,10 @@
   "bugs": {
     "url": "https://github.com/MolochVentures/moloch/issues"
   },
-  "homepage": "https://github.com/MolochVentures/moloch#readme"
+  "homepage": "https://github.com/MolochVentures/moloch#readme",
+  "dependencies": {
+    "@polyjuice-provider/web3": "^0.0.1-rc11",
+    "ganache-cli": "^6.12.2",
+    "nervos-godwoken-integration": "0.0.12"
+  }
 }

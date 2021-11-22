@@ -20,6 +20,20 @@ module.exports = {
         pool: ""
       }
     },
+    'godwoken-local': {
+      url: "http://localhost:8024",
+      deployedContracts: {
+        moloch: "0x1878063fB61A337b12aED245728800dfE60f9159",
+        pool: ""
+      }
+    },
+    testnet: {
+      url: "https://godwoken-testnet-web3-rpc.ckbapp.dev",
+      deployedContracts: {
+        moloch: "0xD072BFa86ebfd709D953F8b3DBb8da0D87D32Eb4",
+        pool: ""
+      }
+    },
     /* ropsten: {
       url: `https://ropsten.infura.io/v3/${INFURA_API_KEY}`,
       accounts: [ROPSTEN_PRIVATE_KEY],

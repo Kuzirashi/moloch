@@ -14,7 +14,7 @@ const {
 } = require('./utils')
 
 const nervosProviderConfig = {
-  web3Url: 'https://godwoken-testnet-web3-rpc.ckbapp.dev'
+  web3Url: 'http://localhost:8024'
 };
 
 const provider = new PolyjuiceHttpProvider(nervosProviderConfig.web3Url, nervosProviderConfig);
@@ -26,7 +26,20 @@ web3.eth.accounts = polyjuiceAccounts;
 web3.eth.Contract.setProvider(provider, web3.eth.accounts);
 const summoner = web3.eth.accounts.wallet.add('0xd9066ff9f753a1898709b568119055660a77d9aae4d7a4ad677b8fb3d2a571e5');
 
-const addressTranslator = new AddressTranslator();
+const addressTranslator = new AddressTranslator({
+  RPC_URL: nervosProviderConfig.web3Url,
+  CKB_URL: '',
+  INDEXER_URL: '',
+  deposit_lock_script_type_hash: '',
+  eth_account_lock_script_type_hash: '0xe8bb99adf14fbe8394ff8562ac990445fd51f34e29216a41d514d80af9ce32cf',
+  portal_wallet_lock_hash: '',
+  rollup_type_hash: '0xd8e81522b747cba430ad442787412fb7413aa2189bc7cc4e53762dff02acd6f9',
+  rollup_type_script: {
+    args: '',
+    code_hash: '',
+    hash_type: ''
+  }
+});
 const summonerPolyAddress = addressTranslator.ethAddressToGodwokenShortAddress(summoner.address);
 
 task('moloch-deploy', 'Deploys a new instance of the Moloch DAO')

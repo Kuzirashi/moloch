@@ -1,5 +1,9 @@
 const BN = require('bn.js')
 
+const buidlerArguments = {
+  network: 'godwoken-local'
+};
+
 // These functions are meant to be run from tasks, so the
 // BuidlerRuntimeEnvironment is available in the global scope.
 
@@ -7,15 +11,14 @@ const BN = require('bn.js')
  * Returns the deployed instance of the Moloch DAO, or undefined if its
  * address hasn't been set in the config.
  */
-async function getDeployedMoloch () {
+async function getDeployedMoloch (web3) {
   const molochAddress = getMolochAddress()
   if (!molochAddress) {
     console.error(`Please, set the DAO's address in buidler.config.js's networks.${buidlerArguments.network}.deployedContracts.moloch`)
     return
   }
 
-  const Moloch = artifacts.require('Moloch')
-  return Moloch.at(molochAddress)
+  return new web3.eth.Contract(artifacts.require('Moloch')._json.abi, molochAddress);
 }
 
 /**
@@ -37,16 +40,15 @@ async function getDeployedPool () {
  * Returns the deployed instance of the Moloch DAO's approved token, or
  * undefined if the DAO's address hasn't been set in the config.
  */
-async function getApprovedToken () {
-  const moloch = await getDeployedMoloch()
+async function getApprovedTokens (web3) {
+  const moloch = await getDeployedMoloch(web3)
   if (moloch === undefined) {
     return
   }
 
-  const IERC20 = artifacts.require('IERC20')
-  const tokenAddress = await moloch.approvedToken()
+  const tokenAddress = await moloch.methods.approvedTokens(0).call();
 
-  return IERC20.at(tokenAddress)
+  return new web3.eth.Contract(artifacts.require('IERC20')._json.abi, tokenAddress);
 }
 
 /**
@@ -66,17 +68,25 @@ function getPoolAddress () {
 }
 
 async function giveAllowance (tokenContract, allowanceGiver, receiverContract, amount) {
-  return tokenContract.approve(receiverContract.address, amount, { from: allowanceGiver })
+  return tokenContract.methods.approve(receiverContract.options.address, amount).send({
+    from: allowanceGiver
+  });
 }
 
 async function hasEnoughAllowance (tokenContract, allowanceGiver, receiverContract, amount) {
-  const allowance = await tokenContract.allowance(allowanceGiver, receiverContract.address)
-  return allowance.gte(new BN(amount))
+  const allowance = await tokenContract.methods.allowance(allowanceGiver, receiverContract.options.address).call();
+  return new BN(allowance).gte(new BN(amount))
 }
 
 async function hasEnoughTokens (tokenContract, tokensOwner, amount) {
-  const balance = await tokenContract.balanceOf(tokensOwner)
-  return balance.gte(new BN(amount))
+  const balance = await tokenContract.methods.balanceOf(tokensOwner).call();
+
+  console.log({
+    balance,
+    amount
+  });
+
+  return new BN(balance).gte(new BN(amount))
 }
 
 async function getFirstAccount () {
@@ -93,7 +103,7 @@ async function hasEnoughPoolShares (pool, owner, amount) {
 module.exports = {
   getDeployedMoloch,
   getDeployedPool,
-  getApprovedToken,
+  getApprovedTokens,
   getMolochAddress,
   getPoolAddress,
   giveAllowance,
